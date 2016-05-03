@@ -8,3 +8,5 @@
 
 + Criado uma JFrame -> MenuClienteServ para cliente servidor
 + Criado Menu do usuário, a interface grafica para usuário poder se conectar na máquina de outra pessoa, para que possa realiazar download
+
++ Criado o método para 

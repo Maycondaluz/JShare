@@ -1,15 +1,31 @@
 package br.maycon.jshare.menu;
 
-import java.awt.BorderLayout;
 import java.awt.EventQueue;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
+
+import br.dagostini.exemplos.LerIp;
+import br.dagostini.jshare.comum.pojos.Arquivo;
+import br.dagostini.jshare.comun.Cliente;
+import br.dagostini.jshare.comun.IServer;
+
 import java.awt.GridBagLayout;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
+import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
+import java.rmi.server.UnicastRemoteObject;
+import java.text.SimpleDateFormat;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import javax.swing.JTextField;
 import javax.swing.JButton;
 import javax.swing.JScrollPane;
@@ -19,7 +35,7 @@ import javax.swing.JTextArea;
 import javax.swing.JTable;
 import java.awt.Font;
 
-public class MenuClienteServ extends JFrame {
+public class MenuClienteServ extends JFrame implements IServer{
 
 	private JPanel contentPane;
 	private JTextField txt_user;
@@ -27,10 +43,10 @@ public class MenuClienteServ extends JFrame {
 	private JTextField txt_portaServidor;
 	private JTextField textField_3;
 	private JTable table;
+	
+	private final String meuIP = new LerIp().retornarIp();
+	private final int MinhaPorta = 1818;
 
-	/**
-	 * Launch the application.
-	 */
 	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
@@ -44,9 +60,6 @@ public class MenuClienteServ extends JFrame {
 		});
 	}
 
-	/**
-	 * Create the frame.
-	 */
 	public MenuClienteServ() {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 812, 478);
@@ -219,4 +232,73 @@ public class MenuClienteServ extends JFrame {
 		contentPane.add(bt_sair, gbc_bt_sair);
 	}
 
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	//=============================================================================
+	//Inicialização das variavéis para mostrar no console do servidor do cliente
+	//=============================================================================
+	
+	private SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy H:mm:ss:SSS");
+
+	private Map<String, Cliente> mapClientServ = new HashMap<>();
+
+	private Map<Cliente, List<Arquivo>> mapArqServ = new HashMap<>();
+
+	private IServer servidorServ;
+
+	private Registry registryClientServ;
+	
+	protected void iniciarServidor() {
+		try {
+			servidorServ = (IServer) UnicastRemoteObject.exportObject(this, 0);
+			registryClientServ = LocateRegistry.createRegistry(this.MinhaPorta);
+			registryClientServ.rebind(IServer.NOME_SERVICO, servidorServ);
+		} catch (RemoteException e) {
+			JOptionPane.showMessageDialog(this, e.getMessage()
+					+ "\n\nErro ao iniciar serviço, verifique se a porta, já está sendo usada ou se firewall está bloqueando.");
+		}
+	}
+
+	@Override
+	public void registrarCliente(Cliente c) throws RemoteException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void publicarListaArquivos(Cliente c, List<Arquivo> lista) throws RemoteException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public Map<Cliente, List<Arquivo>> procurarArquivo(String nome) throws RemoteException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public byte[] baixarArquivo(Arquivo arq) throws RemoteException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void desconectar(Cliente c) throws RemoteException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	
 }
