@@ -1,5 +1,6 @@
 package br.dagostini.jshare.comum.pojos;
 
+import java.io.File;
 import java.io.Serializable;
 
 public class Arquivo implements Serializable{
@@ -8,6 +9,7 @@ public class Arquivo implements Serializable{
 	
 	private String nome;
 	private long tamanho;
+	private File file;
 	
 	public String getNome() {
 		return nome;
@@ -24,6 +26,12 @@ public class Arquivo implements Serializable{
 	
 	public String toString() {
 		return nome+" - "+tamanho;
+	}
+	public File getFile() {
+		return file;
+	}
+	public void setFile(File file) {
+		this.file = file;
 	}
 	
 	
