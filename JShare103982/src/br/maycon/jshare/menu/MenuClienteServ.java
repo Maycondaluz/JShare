@@ -22,6 +22,7 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -315,8 +316,19 @@ public class MenuClienteServ extends JFrame implements IServer{
 
 	@Override
 	public Map<Cliente, List<Arquivo>> procurarArquivo(String nome) throws RemoteException {
-		// TODO Auto-generated method stub
-		return null;
+		Map<Cliente, List<Arquivo>> resultMapArq = new HashMap<>();
+		for (Map.Entry<Cliente, List<Arquivo>> entry : mapArqServ.entrySet()) {
+			List<Arquivo> listArq = new ArrayList<>();
+			for (Arquivo arq : entry.getValue()) {
+				if (arq.getNome().equals(nome)) {
+					listArq.add(arq);
+				}
+			}
+			if (listArq.size() > 0) {
+				resultMapArq.put(entry.getKey(), listArq);
+			}
+		}
+		return resultMapArq;
 	}
 
 	@Override
