@@ -22,6 +22,7 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -73,7 +74,8 @@ public class MenuClienteServ extends JFrame implements IServer{
 		gbl_contentPane.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 1.0, 0.0, Double.MIN_VALUE};
 		contentPane.setLayout(gbl_contentPane);
 		
-		JLabel txt_meuIp = new JLabel("New label");
+		txt_meuIp = new JLabel("New label");
+		txt_meuIp.setFont(new Font("Tahoma", Font.BOLD, 14));
 		GridBagConstraints gbc_txt_meuIp = new GridBagConstraints();
 		gbc_txt_meuIp.gridwidth = 3;
 		gbc_txt_meuIp.insets = new Insets(0, 0, 5, 5);
@@ -183,7 +185,7 @@ public class MenuClienteServ extends JFrame implements IServer{
 		gbc_scrollPane.gridy = 4;
 		contentPane.add(scrollPane, gbc_scrollPane);
 		
-		JTextArea txtA_servicoLocal = new JTextArea();
+		txtA_servicoLocal = new JTextArea();
 		scrollPane.setViewportView(txtA_servicoLocal);
 		
 		JSeparator separator = new JSeparator();
@@ -230,9 +232,14 @@ public class MenuClienteServ extends JFrame implements IServer{
 		gbc_bt_sair.gridx = 4;
 		gbc_bt_sair.gridy = 5;
 		contentPane.add(bt_sair, gbc_bt_sair);
+		
+		mostrarMeuIP();
 	}
 
-	
+	private void mostrarMeuIP(){
+		txt_meuIp.setText("Meu IP: " + this.meuIP + " - Portar: " + this.MinhaPorta);
+		txt_meuIp.setForeground(Color.BLUE);
+	}
 	
 	
 	
@@ -258,6 +265,8 @@ public class MenuClienteServ extends JFrame implements IServer{
 	private IServer servidorServ;
 
 	private Registry registryClientServ;
+	private JLabel txt_meuIp;
+	private JTextArea txtA_servicoLocal;
 	
 	protected void iniciarServidor() {
 		try {
@@ -270,10 +279,30 @@ public class MenuClienteServ extends JFrame implements IServer{
 		}
 	}
 
+	protected void encerrarServidor() {
+		try {
+			UnicastRemoteObject.unexportObject(this, true);
+			UnicastRemoteObject.unexportObject(registryClientServ, true);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	private void mostrar(String string) {
+		txtA_servicoLocal.append(sdf.format(new Date()));
+		txtA_servicoLocal.append(" -> ");
+		txtA_servicoLocal.append(string);
+		txtA_servicoLocal.append("\n");
+	}
+	
+	protected void messageServidorEncerrado(){
+		mostrar("Serviço encerrado, todos desconectados!");
+	}
+	
 	@Override
 	public void registrarCliente(Cliente c) throws RemoteException {
-		// TODO Auto-generated method stub
-		
+		mostrar("Cliente \""+c.getNome().toUpperCase() + "\", com ip:" + c.getIp() + " se conectou.");
+		mapClientServ.put(c.getIp(), c);
 	}
 
 	@Override
