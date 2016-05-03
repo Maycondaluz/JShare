@@ -13,3 +13,5 @@
 + Criado o método para encerrar o servidor que foi iniciado no próprio cliente
 + Criado o método mostrar mensage no cosole do que está acontecedo com o serviço local que o cliente iniciou.
 + implementado IServer no frame MenuClienteServ, primeiro método foi implementado para que possa registrar cliente
++ implementado o método publicarArquivo, para quando um cliente se conectar no serviço ele publique todos arquivos que estejam na pasta upLoad assim alguém que se conectar no servidor possa procurar pelo arquivo e baixalo
++ 

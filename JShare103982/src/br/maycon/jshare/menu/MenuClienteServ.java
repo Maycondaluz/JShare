@@ -307,8 +307,10 @@ public class MenuClienteServ extends JFrame implements IServer{
 
 	@Override
 	public void publicarListaArquivos(Cliente c, List<Arquivo> lista) throws RemoteException {
-		// TODO Auto-generated method stub
-		
+		for (Arquivo arquivo : lista) {
+			mostrar("Cliente:" + c.getNome().toLowerCase() + "\n Publico arq: " + arquivo.getNome() + " : " + arquivo.getTamanho());
+		}
+		mapArqServ.put(c, lista);
 	}
 
 	@Override
