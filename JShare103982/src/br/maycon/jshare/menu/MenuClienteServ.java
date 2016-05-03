@@ -6,6 +6,7 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 
+import br.dagostini.exemplos.LeituraEscritaDeArquivos;
 import br.dagostini.exemplos.LerIp;
 import br.dagostini.jshare.comum.pojos.Arquivo;
 import br.dagostini.jshare.comun.Cliente;
@@ -17,6 +18,7 @@ import javax.swing.JOptionPane;
 
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
+import java.io.File;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
@@ -333,14 +335,17 @@ public class MenuClienteServ extends JFrame implements IServer{
 
 	@Override
 	public byte[] baixarArquivo(Arquivo arq) throws RemoteException {
-		// TODO Auto-generated method stub
-		return null;
+		File file = new File(".\\Share\\UpLoad\\" + arq.getNome());
+		byte[] dados = new LeituraEscritaDeArquivos().leia(file);
+		mostrar("Feito dowload do -> " + arq.getNome());
+		return dados;
 	}
 
 	@Override
 	public void desconectar(Cliente c) throws RemoteException {
-		// TODO Auto-generated method stub
-		
+		mapClientServ.remove(c);
+		mapArqServ.remove(c);
+		mostrar("Cliente: " + c.getNome().toUpperCase() + " desconectado!");		
 	}
 
 	
