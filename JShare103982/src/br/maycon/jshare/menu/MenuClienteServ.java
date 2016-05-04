@@ -12,6 +12,7 @@ import br.dagostini.exemplos.ListarDiretoriosArquivos;
 import br.dagostini.jshare.comum.pojos.Arquivo;
 import br.dagostini.jshare.comun.Cliente;
 import br.dagostini.jshare.comun.IServer;
+import br.maycon.tabela.ObjClienteArquivo;
 import br.maycon.tabela.TableClienteArquivo;
 
 import java.awt.GridBagLayout;
@@ -54,6 +55,12 @@ public class MenuClienteServ extends JFrame implements IServer {
 	private JTable table_peguisa;
 	private JLabel txt_meuIp;
 	private JTextArea txtA_servicoLocal;
+	private JButton bt_conectar;
+	private JButton bt_encerraConComServidor;
+	private JButton bt_encerraServico;
+	private JButton bt_pesquisar;
+	private JButton bt_baixar;
+	
 	private TableClienteArquivo tableModel;
 
 	private final String meuIP = new LerIp().retornarIp();
@@ -258,8 +265,6 @@ public class MenuClienteServ extends JFrame implements IServer {
 
 	private Map<String, Cliente> mapaClientes = new HashMap<>();
 
-	private Map<Cliente, List<Arquivo>> resultMapArquivos = new HashMap<>();
-
 	private IServer servico = null;
 
 	private Cliente cliente = null;
@@ -285,22 +290,22 @@ public class MenuClienteServ extends JFrame implements IServer {
 		});
 		bt_encerraConComServidor.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-
+				encerrarConexão();
 			}
 		});
 		bt_encerraServico.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-
+				encerrarServidor();
 			}
 		});
 		bt_pesquisar.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-
+				pesquisar();
 			}
 		});
 		bt_baixar.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-
+				fazerDowload();
 			}
 		});
 	}
@@ -397,17 +402,44 @@ public class MenuClienteServ extends JFrame implements IServer {
 			table_peguisa.setModel(tableModel.atualizarLista(servico.procurarArquivo(txt_arquivo.getText().trim())));
 		} catch (RemoteException e) {
 			JOptionPane.showMessageDialog(this, "Erro ao pesquisar, ou conexão com o servidor caiu");
-			if (contErros < 2) {
-				JOptionPane.showMessageDialog(this, "Reconectando ao servidor atual");
-				conectar(IPservidorFixo, PORTAservidorFixo);
-				contErros++;
-			}else{
-				JOptionPane.showMessageDialog(this, "Não pode estabeler um conexão com o servidor");
-				contErros=0;
-			}
+			JOptionPane.showMessageDialog(this, "Reconectando ao servidor atual");
+			conectar(IPservidorFixo, PORTAservidorFixo);
+			return;
 		}
 	}
 
+	private void fazerDowload() {
+		try {
+			int row = table_peguisa.getSelectedRow();
+			if (row > -1) {
+				ObjClienteArquivo result = tableModel.retornarDados(row);
+				servico = null;
+				
+				txt_IPServidor.setText(result.getCliente().getIp());
+				txt_portaServidor.setText(String.valueOf(result.getCliente().getPorta()));
+				// conecta no cliente que possui arquivo para download
+				conectar(txt_IPServidor.getText(), txt_portaServidor.getText());
+				
+				escreverDowload(servico.baixarArquivo(result.getArquivo()), result.getArquivo().getFile());
+
+				JOptionPane.showMessageDialog(this,	"Efetuado download do arquivo:" + result.getArquivo().getNome() + "\ncom sucesso.");
+				// return;
+			} else {
+				JOptionPane.showMessageDialog(this, "Selecione um item para que possa ser baixado!");
+			}
+		} catch (RemoteException e) {
+			JOptionPane.showMessageDialog(this, "Erro ao fazer dowload");
+			JOptionPane.showMessageDialog(this, "Reconectando ao servidor atual");
+			conectar(IPservidorFixo, PORTAservidorFixo);
+			return;
+		}
+	}
+
+	private void escreverDowload(byte[] dados, File nome) {
+		new LeituraEscritaDeArquivos().escreva(new File(".\\Share\\Download\\" + "Cópia do " + nome.getName()), dados);
+	}
+	
+	
 	// =============================================================================
 	// Inicialização das variavéis para mostrar no console do servidor do
 	// cliente
@@ -422,11 +454,6 @@ public class MenuClienteServ extends JFrame implements IServer {
 	private IServer servidorServ;
 
 	private Registry registryClientServ;
-	private JButton bt_conectar;
-	private JButton bt_encerraConComServidor;
-	private JButton bt_encerraServico;
-	private JButton bt_pesquisar;
-	private JButton bt_baixar;
 
 	protected void iniciarServidor() {
 		try {
