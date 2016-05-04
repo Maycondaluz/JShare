@@ -76,5 +76,9 @@ public class TableClienteArquivo extends AbstractTableModel{
 		this.fireTableStructureChanged();
 		return this;
 	}
+	
+	public ObjClienteArquivo retornarDados(int rowIndex){
+		return this.lista.get(rowIndex);
+	}
 
 }

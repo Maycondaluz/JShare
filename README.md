@@ -17,6 +17,7 @@
 + Implementado os método para baixar dados atráves do nome do arquivo que o cliente publicou assim que conectou no servidor
 + Criado as pasta de download e UpLoad dentro da pasta JShare que vai ficar um para que o cliente possa fazer download e outro para copia de um arquivo de outra máquina
 + Criado o método  para atualizarLista de arquivos que foi pesquisados pelo cliente na tabela
++ Criado o método para retornar o objeto que está contido em um linha da tabela
 
 
 + Criado o pacote br.maycon.tabela
