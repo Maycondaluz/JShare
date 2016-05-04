@@ -8,6 +8,7 @@ import javax.swing.border.EmptyBorder;
 
 import br.dagostini.exemplos.LeituraEscritaDeArquivos;
 import br.dagostini.exemplos.LerIp;
+import br.dagostini.exemplos.ListarDiretoriosArquivos;
 import br.dagostini.jshare.comum.pojos.Arquivo;
 import br.dagostini.jshare.comun.Cliente;
 import br.dagostini.jshare.comun.IServer;
@@ -19,6 +20,7 @@ import javax.swing.JOptionPane;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
 import java.io.File;
+import java.rmi.Naming;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
@@ -38,6 +40,8 @@ import java.awt.Color;
 import javax.swing.JTextArea;
 import javax.swing.JTable;
 import java.awt.Font;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
 
 public class MenuClienteServ extends JFrame implements IServer{
 
@@ -47,6 +51,8 @@ public class MenuClienteServ extends JFrame implements IServer{
 	private JTextField txt_portaServidor;
 	private JTextField textField_3;
 	private JTable table;
+	private JLabel txt_meuIp;
+	private JTextArea txtA_servicoLocal;
 	
 	private final String meuIP = new LerIp().retornarIp();
 	private final int MinhaPorta = 1818;
@@ -138,7 +144,8 @@ public class MenuClienteServ extends JFrame implements IServer{
 		contentPane.add(txt_IPServidor, gbc_txt_IPServidor);
 		txt_IPServidor.setColumns(10);
 		
-		JButton bt_pesquisar = new JButton("Pesquisar arquivo");
+		bt_pesquisar = new JButton("Pesquisar arquivo");
+		
 		GridBagConstraints gbc_bt_pesquisar = new GridBagConstraints();
 		gbc_bt_pesquisar.fill = GridBagConstraints.HORIZONTAL;
 		gbc_bt_pesquisar.insets = new Insets(0, 0, 5, 0);
@@ -163,14 +170,16 @@ public class MenuClienteServ extends JFrame implements IServer{
 		contentPane.add(txt_portaServidor, gbc_txt_portaServidor);
 		txt_portaServidor.setColumns(10);
 		
-		JButton bt_conectar = new JButton("Conectar no servidor");
+		bt_conectar = new JButton("Conectar no servidor");
+		
 		GridBagConstraints gbc_bt_conectar = new GridBagConstraints();
 		gbc_bt_conectar.insets = new Insets(0, 0, 5, 5);
 		gbc_bt_conectar.gridx = 2;
 		gbc_bt_conectar.gridy = 3;
 		contentPane.add(bt_conectar, gbc_bt_conectar);
 		
-		JButton bt_baixar = new JButton("baixar arquivo");
+		bt_baixar = new JButton("baixar arquivo");
+		
 		bt_baixar.setToolTipText("selecione um linha da pesquisa pra download");
 		GridBagConstraints gbc_bt_baixar = new GridBagConstraints();
 		gbc_bt_baixar.fill = GridBagConstraints.HORIZONTAL;
@@ -213,7 +222,8 @@ public class MenuClienteServ extends JFrame implements IServer{
 		table = new JTable();
 		table_pesquisa.setViewportView(table);
 		
-		JButton bt_encerraConComServidor = new JButton("Desconectar do servidor");
+		bt_encerraConComServidor = new JButton("Desconectar do servidor");
+		
 		GridBagConstraints gbc_bt_encerraConComServidor = new GridBagConstraints();
 		gbc_bt_encerraConComServidor.anchor = GridBagConstraints.EAST;
 		gbc_bt_encerraConComServidor.insets = new Insets(0, 0, 0, 5);
@@ -221,7 +231,8 @@ public class MenuClienteServ extends JFrame implements IServer{
 		gbc_bt_encerraConComServidor.gridy = 5;
 		contentPane.add(bt_encerraConComServidor, gbc_bt_encerraConComServidor);
 		
-		JButton bt_encerraServico = new JButton("Encerrar servi\u00E7o");
+		bt_encerraServico = new JButton("Encerrar servi\u00E7o");
+		
 		GridBagConstraints gbc_bt_encerraServico = new GridBagConstraints();
 		gbc_bt_encerraServico.anchor = GridBagConstraints.EAST;
 		gbc_bt_encerraServico.insets = new Insets(0, 0, 0, 5);
@@ -239,14 +250,120 @@ public class MenuClienteServ extends JFrame implements IServer{
 		mostrarMeuIP();
 	}
 
+	
+	private static String IPservidorFixo = null;
+
+	private static String PORTAservidorFixo = null;
+
+	private Map<String, Cliente> mapaClientes = new HashMap<>();
+
+	private Map<Cliente, List<Arquivo>> resultMapArquivos = new HashMap<>();
+
+	private IServer servico = null;
+
+	private Cliente cliente = null;
+	
+	private int contErros = 0;
+
+	//============================================================================
+	// Métodos criados
+	//============================================================================
+	
 	private void mostrarMeuIP(){
 		txt_meuIp.setText("Meu IP: " + this.meuIP + " - Portar: " + this.MinhaPorta);
 		txt_meuIp.setForeground(Color.BLUE);
 	}
 	
+	private void configura(){
+		bt_conectar.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				
+			}
+		});		
+		bt_encerraConComServidor.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				
+			}
+		});
+		bt_encerraServico.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				
+			}
+		});
+		bt_pesquisar.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				
+			}
+		});
+		bt_baixar.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				
+			}
+		});  
+	}
 	
-	
-	
+	protected void conectar(String hostServidor, String portaServidor) {
+		try {
+			if (!hostServidor.matches("[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}")) {
+				throw new RuntimeException("O endereço de ip parece invalido!");
+			}
+			
+			if (!portaServidor.matches("[0-9]+") || portaServidor.length() > 5) {
+				throw new RuntimeException("A porta deve ser um valor numérico de no máximo 5 dígitos!");
+			}
+			int porta = Integer.parseInt(portaServidor);
+			if (porta < 1024 || porta > 65535) {
+				throw new RuntimeException("A porta deve estar entre os valores de 1024 à  65535!");
+			}
+
+			instaciarClient();
+
+			servico = (IServer) Naming.lookup("rmi://" + hostServidor + ":" + porta + "/" + IServer.NOME_SERVICO);
+
+			servico.registrarCliente(cliente);
+			servico.publicarListaArquivos(cliente, new ListarDiretoriosArquivos().listarArquivos());
+
+			bt_pesquisar.setEnabled(true);
+
+		} catch (Exception e) {
+			JOptionPane.showMessageDialog(null,
+					e.getMessage() + "\n\n-------------------------------------------------------\n"
+							+ "ERRO: VERIFIQUE SE O SERVIDOR JÁ NÃO ESTÁ RODANDO, SE A PORTA NÃO ESTÁ SENDO UTILIZADA"
+							+ " E SE NÃO HÁ BLOQUEIO DE FIREWALL OU ANTIVIRUS.\n"
+							+ "-------------------------------------------------------------------\n\n");
+			if(contErros < 2){
+				JOptionPane.showMessageDialog(this, "Reconectando ao servidor");
+				conectar(IPservidorFixo, PORTAservidorFixo);
+				contErros++;
+			}else{
+				JOptionPane.showMessageDialog(this, "Não é possivél se reconectando ao servidor");
+				contErros = 0;
+			}
+		}
+
+	}
+
+	private void instaciarClient() throws RuntimeException {
+		String user = txt_user.getText().trim();
+		if (user.length() == 0) {
+			throw new RuntimeException("Digite um nome!");
+		}
+		if (cliente == null) {
+			if (IPservidorFixo == null || PORTAservidorFixo == null) {
+				IPservidorFixo = txt_IPServidor.getText();
+				PORTAservidorFixo = txt_portaServidor.getText();
+			}
+			cliente = new Cliente();
+			cliente.setNome(user);
+			cliente.setIp(this.meuIP);
+			cliente.setPorta(this.MinhaPorta);
+		} else {
+			cliente.setNome(user);
+			cliente.setIp(this.meuIP);
+			cliente.setPorta(this.MinhaPorta);
+		}
+	}
+
 	
 	
 	
@@ -256,7 +373,7 @@ public class MenuClienteServ extends JFrame implements IServer{
 	
 	
 	//=============================================================================
-	//Inicializa��o das variav�is para mostrar no console do servidor do cliente
+	//Inicialização das variavéis para mostrar no console do servidor do cliente
 	//=============================================================================
 	
 	private SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy H:mm:ss:SSS");
@@ -268,8 +385,11 @@ public class MenuClienteServ extends JFrame implements IServer{
 	private IServer servidorServ;
 
 	private Registry registryClientServ;
-	private JLabel txt_meuIp;
-	private JTextArea txtA_servicoLocal;
+	private JButton bt_conectar;
+	private JButton bt_encerraConComServidor;
+	private JButton bt_encerraServico;
+	private JButton bt_pesquisar;
+	private JButton bt_baixar;
 	
 	protected void iniciarServidor() {
 		try {
@@ -278,7 +398,7 @@ public class MenuClienteServ extends JFrame implements IServer{
 			registryClientServ.rebind(IServer.NOME_SERVICO, servidorServ);
 		} catch (RemoteException e) {
 			JOptionPane.showMessageDialog(this, e.getMessage()
-					+ "\n\nErro ao iniciar servi�o, verifique se a porta, j� est� sendo usada ou se firewall est� bloqueando.");
+					+ "\n\nErro ao iniciar serviço, verifique se a porta, já está sendo usada ou se firewall está bloqueando.");
 		}
 	}
 
@@ -299,7 +419,7 @@ public class MenuClienteServ extends JFrame implements IServer{
 	}
 	
 	protected void messageServidorEncerrado(){
-		mostrar("Servi�o encerrado, todos desconectados!");
+		mostrar("Serviço encerrado, todos desconectados!");
 	}
 	
 	@Override
