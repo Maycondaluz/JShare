@@ -12,6 +12,7 @@ import br.dagostini.exemplos.ListarDiretoriosArquivos;
 import br.dagostini.jshare.comum.pojos.Arquivo;
 import br.dagostini.jshare.comun.Cliente;
 import br.dagostini.jshare.comun.IServer;
+import br.maycon.tabela.TableClienteArquivo;
 
 import java.awt.GridBagLayout;
 import javax.swing.JLabel;
@@ -50,9 +51,10 @@ public class MenuClienteServ extends JFrame implements IServer{
 	private JTextField txt_IPServidor;
 	private JTextField txt_portaServidor;
 	private JTextField textField_3;
-	private JTable table;
+	private JTable table_peguisa;
 	private JLabel txt_meuIp;
 	private JTextArea txtA_servicoLocal;
+	private TableClienteArquivo tableModel;
 	
 	private final String meuIP = new LerIp().retornarIp();
 	private final int MinhaPorta = 1818;
@@ -211,16 +213,16 @@ public class MenuClienteServ extends JFrame implements IServer{
 		gbc_separator.gridy = 1;
 		contentPane.add(separator, gbc_separator);
 		
-		JScrollPane table_pesquisa = new JScrollPane();
+		JScrollPane scrollPaneTable = new JScrollPane();
 		GridBagConstraints gbc_table_pesquisa = new GridBagConstraints();
 		gbc_table_pesquisa.insets = new Insets(0, 0, 5, 0);
 		gbc_table_pesquisa.fill = GridBagConstraints.BOTH;
 		gbc_table_pesquisa.gridx = 4;
 		gbc_table_pesquisa.gridy = 4;
-		contentPane.add(table_pesquisa, gbc_table_pesquisa);
+		contentPane.add(scrollPaneTable, gbc_table_pesquisa);
 		
-		table = new JTable();
-		table_pesquisa.setViewportView(table);
+		table_peguisa = new JTable();
+		scrollPaneTable.setViewportView(table_peguisa);
 		
 		bt_encerraConComServidor = new JButton("Desconectar do servidor");
 		
@@ -247,7 +249,7 @@ public class MenuClienteServ extends JFrame implements IServer{
 		gbc_bt_sair.gridy = 5;
 		contentPane.add(bt_sair, gbc_bt_sair);
 		
-		mostrarMeuIP();
+		configura();
 	}
 
 	
@@ -275,9 +277,11 @@ public class MenuClienteServ extends JFrame implements IServer{
 	}
 	
 	private void configura(){
+		mostrarMeuIP();
+		
 		bt_conectar.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				
+				conectar(txt_IPServidor.getText().trim(), txt_portaServidor.getText().trim());
 			}
 		});		
 		bt_encerraConComServidor.addActionListener(new ActionListener() {
@@ -364,6 +368,30 @@ public class MenuClienteServ extends JFrame implements IServer{
 		}
 	}
 
+	protected void encerrarConexão() {
+		try {
+			for (int i = 0; i < mapaClientes.size(); i++) {
+				desconectar(mapaClientes.get(i));
+			}
+			if (servico != null)
+				servico.desconectar(cliente);
+			if (servidorServ != null){
+				encerrarServidor();
+			}	
+		} catch (RemoteException e1) {
+			return;
+		}
+	}
+
+	public void carregarTabela() {
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				tableModel = new TableClienteArquivo();
+				table_peguisa.setModel(tableModel);
+			}
+		}).start();
+	}
 	
 	
 	

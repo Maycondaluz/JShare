@@ -23,4 +23,4 @@
 + Criado o pacote br.maycon.tabela
 + Criada a classe dentro do pacote chamada TableClienteArquivo
 + Criada a classe ObjClienteArquivo para poder manter objetos diferente de ambos
-
++ Criado o método para iniciar a tabela de cliente que estão conectados no servidor e os arquivos disponibilizados
