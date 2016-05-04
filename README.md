@@ -24,3 +24,4 @@
 + Criada a classe dentro do pacote chamada TableClienteArquivo
 + Criada a classe ObjClienteArquivo para poder manter objetos diferente de ambos
 + Criado o método para iniciar a tabela de cliente que estão conectados no servidor e os arquivos disponibilizados
++ Criado o método para fezer dowloand e o método que chama para poder copiar arquivo que foi buscado no servidor do cliente.
