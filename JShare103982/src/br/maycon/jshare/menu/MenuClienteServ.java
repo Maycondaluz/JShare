@@ -60,11 +60,11 @@ public class MenuClienteServ extends JFrame implements IServer {
 	private JButton bt_encerraServico;
 	private JButton bt_pesquisar;
 	private JButton bt_baixar;
-	
+	private JButton btnInciarServio;
 	private TableClienteArquivo tableModel;
 
 	private final String meuIP = new LerIp().retornarIp();
-	private final int MinhaPorta = 1818;
+	private final int MinhaPorta = 2626;
 
 	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() {
@@ -81,25 +81,34 @@ public class MenuClienteServ extends JFrame implements IServer {
 
 	public MenuClienteServ() {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, 812, 478);
+		setBounds(100, 100, 958, 480);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
 		GridBagLayout gbl_contentPane = new GridBagLayout();
-		gbl_contentPane.columnWidths = new int[] { 102, 138, 0, 13, 0, 0 };
+		gbl_contentPane.columnWidths = new int[] { 102, 184, 0, 13, 0, 0 };
 		gbl_contentPane.rowHeights = new int[] { 0, 15, 0, 0, 0, 0, 0 };
 		gbl_contentPane.columnWeights = new double[] { 0.0, 0.0, 0.0, 0.0, 1.0, Double.MIN_VALUE };
 		gbl_contentPane.rowWeights = new double[] { 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, Double.MIN_VALUE };
 		contentPane.setLayout(gbl_contentPane);
 
 		txt_meuIp = new JLabel("New label");
-		txt_meuIp.setFont(new Font("Tahoma", Font.BOLD, 14));
+		txt_meuIp.setFont(new Font("Tahoma", Font.BOLD, 12));
 		GridBagConstraints gbc_txt_meuIp = new GridBagConstraints();
-		gbc_txt_meuIp.gridwidth = 3;
+		gbc_txt_meuIp.gridwidth = 2;
 		gbc_txt_meuIp.insets = new Insets(0, 0, 5, 5);
 		gbc_txt_meuIp.gridx = 0;
 		gbc_txt_meuIp.gridy = 0;
 		contentPane.add(txt_meuIp, gbc_txt_meuIp);
+		
+		btnInciarServio = new JButton("Inciar Serviço");
+		
+		GridBagConstraints gbc_btnInciarServio = new GridBagConstraints();
+		gbc_btnInciarServio.fill = GridBagConstraints.HORIZONTAL;
+		gbc_btnInciarServio.insets = new Insets(0, 0, 5, 5);
+		gbc_btnInciarServio.gridx = 2;
+		gbc_btnInciarServio.gridy = 0;
+		contentPane.add(btnInciarServio, gbc_btnInciarServio);
 
 		JLabel lblDigiteONome = new JLabel("Digite o nome do arquivo:");
 		lblDigiteONome.setFont(new Font("Tahoma", Font.PLAIN, 13));
@@ -249,7 +258,8 @@ public class MenuClienteServ extends JFrame implements IServer {
 		gbc_bt_encerraServico.gridy = 5;
 		contentPane.add(bt_encerraServico, gbc_bt_encerraServico);
 
-		JButton bt_sair = new JButton("Sair");
+		bt_sair = new JButton("Sair");
+		
 		GridBagConstraints gbc_bt_sair = new GridBagConstraints();
 		gbc_bt_sair.anchor = GridBagConstraints.EAST;
 		gbc_bt_sair.gridx = 4;
@@ -269,8 +279,6 @@ public class MenuClienteServ extends JFrame implements IServer {
 
 	private Cliente cliente = null;
 
-	private int contErros = 0;
-
 	// ============================================================================
 	// Métodos criados
 	// ============================================================================
@@ -282,10 +290,17 @@ public class MenuClienteServ extends JFrame implements IServer {
 
 	private void configura() {
 		mostrarMeuIP();
+		carregarTabela();
+		
+		btnInciarServio.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				iniciarServidor();
+			}
+		});
 
 		bt_conectar.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				conectar(txt_IPServidor.getText().trim(), txt_portaServidor.getText().trim());
+				conectar(txt_IPServidor.getText().trim(), txt_portaServidor.getText().trim(), 0);
 			}
 		});
 		bt_encerraConComServidor.addActionListener(new ActionListener() {
@@ -308,20 +323,29 @@ public class MenuClienteServ extends JFrame implements IServer {
 				fazerDowload();
 			}
 		});
+		
+		bt_sair.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				System.exit(0);
+			}
+		});
 	}
 
-	protected void conectar(String hostServidor, String portaServidor) {
+	protected void conectar(String hostServidor, String portaServidor, int contErro) {
 		try {
 			if (!hostServidor.matches("[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}")) {
-				throw new RuntimeException("O endereço de ip parece invalido!");
+				JOptionPane.showMessageDialog(this,"O endereço de ip parece invalido!");
+				return;
 			}
 
 			if (!portaServidor.matches("[0-9]+") || portaServidor.length() > 5) {
-				throw new RuntimeException("A porta deve ser um valor numérico de no máximo 5 dígitos!");
+				JOptionPane.showMessageDialog(this,"A porta deve ser um valor numérico de no máximo 5 dígitos!");
+				return;
 			}
 			int porta = Integer.parseInt(portaServidor);
 			if (porta < 1024 || porta > 65535) {
-				throw new RuntimeException("A porta deve estar entre os valores de 1024 à  65535!");
+				JOptionPane.showMessageDialog(this,"A porta deve estar entre os valores de 1024 à  65535!");
+				return;
 			}
 
 			instaciarClient();
@@ -332,20 +356,20 @@ public class MenuClienteServ extends JFrame implements IServer {
 			servico.publicarListaArquivos(cliente, new ListarDiretoriosArquivos().listarArquivos());
 
 			bt_pesquisar.setEnabled(true);
-
+			
+			JOptionPane.showMessageDialog(null, "Conectou ao servidor");
 		} catch (Exception e) {
 			JOptionPane.showMessageDialog(null,
 					e.getMessage() + "\n\n-------------------------------------------------------\n"
 							+ "ERRO: VERIFIQUE SE O SERVIDOR JÁ NÃO ESTÁ RODANDO, SE A PORTA NÃO ESTÁ SENDO UTILIZADA"
 							+ " E SE NÃO HÁ BLOQUEIO DE FIREWALL OU ANTIVIRUS.\n"
 							+ "-------------------------------------------------------------------\n\n");
-			if (contErros < 2) {
+			e.printStackTrace();
+			if (contErro < 2) {
 				JOptionPane.showMessageDialog(this, "Reconectando ao servidor");
-				conectar(IPservidorFixo, PORTAservidorFixo);
-				contErros++;
+				conectar(IPservidorFixo, PORTAservidorFixo, contErro + 1);
 			} else {
 				JOptionPane.showMessageDialog(this, "Não é possivél se reconectando ao servidor");
-				contErros = 0;
 			}
 		}
 
@@ -382,6 +406,7 @@ public class MenuClienteServ extends JFrame implements IServer {
 			if (servidorServ != null) {
 				encerrarServidor();
 			}
+			JOptionPane.showMessageDialog(null, "Conexão encerrada");
 		} catch (RemoteException e1) {
 			return;
 		}
@@ -403,7 +428,7 @@ public class MenuClienteServ extends JFrame implements IServer {
 		} catch (RemoteException e) {
 			JOptionPane.showMessageDialog(this, "Erro ao pesquisar, ou conexão com o servidor caiu");
 			JOptionPane.showMessageDialog(this, "Reconectando ao servidor atual");
-			conectar(IPservidorFixo, PORTAservidorFixo);
+			conectar(IPservidorFixo, PORTAservidorFixo, 0);
 			return;
 		}
 	}
@@ -413,16 +438,19 @@ public class MenuClienteServ extends JFrame implements IServer {
 			int row = table_peguisa.getSelectedRow();
 			if (row > -1) {
 				ObjClienteArquivo result = tableModel.retornarDados(row);
-				servico = null;
 				
-				txt_IPServidor.setText(result.getCliente().getIp());
-				txt_portaServidor.setText(String.valueOf(result.getCliente().getPorta()));
-				// conecta no cliente que possui arquivo para download
-				conectar(txt_IPServidor.getText(), txt_portaServidor.getText());
+				if(result.getCliente().getIp() != txt_IPServidor.getText().trim()){
+					servico = null;
+					txt_IPServidor.setText(result.getCliente().getIp());
+					txt_portaServidor.setText(String.valueOf(result.getCliente().getPorta()));
+					
+					// conecta no cliente que possui arquivo para download
+					conectar(txt_IPServidor.getText(), txt_portaServidor.getText(), 0);
+				}
 				
 				escreverDowload(servico.baixarArquivo(result.getArquivo()), result.getArquivo().getFile());
 
-				JOptionPane.showMessageDialog(this,	"Efetuado download do arquivo:" + result.getArquivo().getNome() + "\ncom sucesso.");
+				JOptionPane.showMessageDialog(this,	"Efetuado download do arquivo: " + result.getArquivo().getNome() + "\ncom sucesso.");
 				// return;
 			} else {
 				JOptionPane.showMessageDialog(this, "Selecione um item para que possa ser baixado!");
@@ -430,13 +458,14 @@ public class MenuClienteServ extends JFrame implements IServer {
 		} catch (RemoteException e) {
 			JOptionPane.showMessageDialog(this, "Erro ao fazer dowload");
 			JOptionPane.showMessageDialog(this, "Reconectando ao servidor atual");
-			conectar(IPservidorFixo, PORTAservidorFixo);
+			conectar(IPservidorFixo, PORTAservidorFixo, 0);
 			return;
 		}
 	}
 
 	private void escreverDowload(byte[] dados, File nome) {
-		new LeituraEscritaDeArquivos().escreva(new File(".\\Share\\Download\\" + "Cópia do " + nome.getName()), dados);
+		File nomedoarq = new File(".\\Share\\Download\\" + " Cópia do -" + nome.getName());
+		new LeituraEscritaDeArquivos().escreva(nomedoarq, dados);
 	}
 	
 	
@@ -454,12 +483,16 @@ public class MenuClienteServ extends JFrame implements IServer {
 	private IServer servidorServ;
 
 	private Registry registryClientServ;
+	private JButton bt_sair;
 
 	protected void iniciarServidor() {
 		try {
+			int porta = this.MinhaPorta;
 			servidorServ = (IServer) UnicastRemoteObject.exportObject(this, 0);
-			registryClientServ = LocateRegistry.createRegistry(this.MinhaPorta);
+			registryClientServ = LocateRegistry.createRegistry(porta);
 			registryClientServ.rebind(IServer.NOME_SERVICO, servidorServ);
+			mostrar("Serviço iniciado");
+			
 		} catch (RemoteException e) {
 			JOptionPane.showMessageDialog(this, e.getMessage()
 					+ "\n\nErro ao iniciar serviço, verifique se a porta, já está sendo usada ou se firewall está bloqueando.");
@@ -470,6 +503,7 @@ public class MenuClienteServ extends JFrame implements IServer {
 		try {
 			UnicastRemoteObject.unexportObject(this, true);
 			UnicastRemoteObject.unexportObject(registryClientServ, true);
+			mostrar("Serviço local encerrado");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -503,6 +537,12 @@ public class MenuClienteServ extends JFrame implements IServer {
 
 	@Override
 	public Map<Cliente, List<Arquivo>> procurarArquivo(String nome) throws RemoteException {
+		if(nome.length() == 0){
+			mostrar("Enviado toda lista de cliente que publicou arquivos");
+			return mapArqServ;
+		}
+		
+		mostrar("Pesquisado arquivo:"+ nome);
 		Map<Cliente, List<Arquivo>> resultMapArq = new HashMap<>();
 		for (Map.Entry<Cliente, List<Arquivo>> entry : mapArqServ.entrySet()) {
 			List<Arquivo> listArq = new ArrayList<>();
@@ -520,7 +560,7 @@ public class MenuClienteServ extends JFrame implements IServer {
 
 	@Override
 	public byte[] baixarArquivo(Arquivo arq) throws RemoteException {
-		File file = new File(".\\Share\\UpLoad\\" + arq.getNome());
+		File file = new File(".\\Share\\Upload\\" + arq.getNome());
 		byte[] dados = new LeituraEscritaDeArquivos().leia(file);
 		mostrar("Feito dowload do -> " + arq.getNome());
 		return dados;

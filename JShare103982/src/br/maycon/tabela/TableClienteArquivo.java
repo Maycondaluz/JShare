@@ -70,6 +70,7 @@ public class TableClienteArquivo extends AbstractTableModel{
 				obj.getCliente().setPorta(entry.getKey().getPorta());
 				obj.getArquivo().setNome(aq.getNome());
 				obj.getArquivo().setTamanho(aq.getTamanho());
+				obj.getArquivo().setFile(aq.getFile());
 				this.lista.add(obj);
 			}
 		}

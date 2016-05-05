@@ -3,6 +3,8 @@ package br.dagostini.jshare.comum.pojos;
 import java.io.File;
 import java.io.Serializable;
 
+import javax.swing.JOptionPane;
+
 public class Arquivo implements Serializable{
 	
 	private static final long serialVersionUID = 8077295408159335912L;
@@ -23,16 +25,17 @@ public class Arquivo implements Serializable{
 	public void setTamanho(long tamanho) {
 		this.tamanho = tamanho;
 	}
-	
-	public String toString() {
-		return nome+" - "+tamanho;
-	}
 	public File getFile() {
 		return file;
 	}
 	public void setFile(File file) {
-		this.file = file;
+		this.file = new File(file.toString());
 	}
+	
+	public String toString() {
+		return nome+" - "+tamanho;
+	}
+	
 	
 	
 	
